@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kantin INSTIKI</string>
+    <string name="app_title">Kantin INSTIKI</string>
+    <string name="app_subtitle">Pesan makananmu dari kantin favorite dan dapatkan pengalaman makan lebih menyenangkan</string>
+    <string name="app_logo">App Logo</string>
+    <string name="search_hint">Cari tenant atau makanan…</string>
+    <string name="search_icon">Search Icon</string>
+    <string name="how_to_order">Cara Memesan</string>
+    <string name="number_1">1</string>
+    <string name="number_2">2</string>
+    <string name="number_3">3</string>
+    <string name="choose_tenant">Pilih Tenant</string>
+    <string name="choose_tenant_desc">Pilih tenant kantin favorite kamu dan lihat menu yang tersedia</string>
+    <string name="choose_menu">Pilih Menu</string>
+    <string name="choose_menu_desc">Tambahkan menu yang kamu inginkan ke keranjang dan lakukan pembayaran</string>
+    <string name="show_qr">Tunjukkan QR Code</string>
+    <string name="show_qr_desc">Tunjukkan QR Code ke tenant untuk mengambil pesananmu</string>
+    <string name="tenant_kantin">Tenant Kantin</string>
+    <string name="all">Semua</string>
+    <string name="indonesian">Indonesian</string>
+    <string name="rice_bowl">Rice Bowl</string>
+    <string name="snack">Snack</string>
+    <string name="spicy">Spicy</string>
+    <string name="makanan">Makanan</string>
+    <string name="minuman">Minuman</string>
+    <string name="warung_kampus">Warung Kampus</string>
+    <string name="warung_desc">Nasi goreng ada, Mie goeng ada, Semua ada</string>
+    <string name="rating_star">Rating Star</string>
+    <string name="rating_4_9">4.9</string>
+    <string name="see_menu">Lihat Menu</string>
+    <string name="arrow_right">Arrow Right</string>
+    <string name="home">Home</string>
+    <string name="orders">Orders</string>
+    <string name="profile">Profile</string>
+    <string name="home_button">Home Button</string>
+    <string name="tambah">Tambahkan</string>
+    <string name="semua">Semua</string>
+    <string name="cemilan">Cemilan</string>
+    <string name="search_menu_hint">Cari yang kamu mau…</string>
+
+
+    <!-- Tambahan string untuk halaman profil -->
+    <string name="kembali">Kembali</string>
+    <string name="profil_akun">Profil Akun</string>
+    <string name="informasi_pengguna">Informasi Pengguna</string>
+    <string name="notifikasi">Notifikasi</string>
+    <string name="log_out">Log out</string>
+    <string name="user_info_icon">User Info Icon</string>
+    <string name="notification_icon">Notification Icon</string>
+
+    <string name="nasi_goreng">Nasi Goreng</string>
+    <string name="nasi_goreng_desc">Nasi goreng enak dengan potongan sayur dan daging ayam.</string>
+    <string name="add_new_menu">Tambah Menu</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+
+    <string name="login">Login App</string>
+    <string name="login_title">Login Akun</string>
+    <string name="login_subtitle">Silakan masukkan username dan password</string>
+    <string name="username_label">Username</string>
+    <string name="password_label">Password</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="tenant_link">Masuk sebagai tenant? Klik di sini</string>
+    <string name="username_empty_error">Username tidak boleh kosong</string>
+    <string name="password_empty_error">Password tidak boleh kosong</string>
+
+</resources>
