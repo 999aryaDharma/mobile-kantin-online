@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id ("kotlin-parcelize")
     id("org.jetbrains.kotlin.kapt")
 }
 
@@ -60,6 +61,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     //noinspection KaptUsageInsteadOfKsp
     kapt(libs.glide.compiler)  // ini valid
+
+    // OkHttp (pastikan alias 'okhttp', 'okhttp.logging.interceptor', dan 'okhttp.urlconnection' didefinisikan di libs.versions.toml)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor) // Untuk debugging request/response jaringan
+    implementation(libs.okhttp.urlconnection) // Memberikan extension 'toRequestBody', 'asRequestBody', 'toMediaTypeOrNull'
 
     // Material Design & Layout Support
     implementation(libs.material) // com.google.android.material:material:...

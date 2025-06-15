@@ -1,9 +1,12 @@
 package com.example.uts_2301010174.user
 
+import com.google.gson.annotations.SerializedName
+
 class CategoryModels {
     // Ini adalah model untuk item kategori tunggal
     data class Category(
-        val id: String, // Sesuaikan dengan tipe data ID kategori Anda (misal: Int)
+        @SerializedName("id_category")
+        val id: Int, // Sesuaikan dengan tipe data ID kategori Anda (misal: Int)
         val name: String
     )
 

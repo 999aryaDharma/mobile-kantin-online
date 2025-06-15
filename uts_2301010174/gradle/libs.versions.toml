@@ -20,6 +20,13 @@ constraintlayout = "2.1.4"
 lifecycleLivedataKtx = "2.9.0"
 lifecycleViewmodelKtx = "2.9.0"
 
+
+okhttp = "4.12.0" # Pastikan versi ini konsisten
+okhttp-logging-interceptor = "4.12.0"
+okhttp-urlconnection = "4.12.0"
+# okio = "3.9.0" # Hanya tambahkan ini jika setelah OkHttp, Anda masih melihat Unresolved reference untuk toMediaTypeOrNull
+
+
 [libraries]
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version = "4.16.0" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,8 +57,16 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 
+# >>> TAMBAHKAN LIBRARY OKHTTP DI SINI <<<
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp-logging-interceptor" }
+okhttp-urlconnection = { group = "com.squareup.okhttp3", name = "okhttp-urlconnection", version.ref = "okhttp-urlconnection" }
+# okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" } # Hanya jika Anda menambahkan di [versions]
+# >>> AKHIR PENAMBAHAN LIBRARY OKHTTP <<<
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 

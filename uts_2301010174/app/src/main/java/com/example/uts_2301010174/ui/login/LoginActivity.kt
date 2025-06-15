@@ -38,7 +38,7 @@ class LoginActivity : AppCompatActivity() {
         edtPassword = findViewById(R.id.edtPassword)
         btnLogin = findViewById(R.id.btnLogin)
         txtResult = findViewById(R.id.txtResult)
-        sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
         progressDialog = ProgressDialog(this).apply {
             setMessage("Logging in...")
@@ -74,16 +74,27 @@ class LoginActivity : AppCompatActivity() {
                         txtResult.setTextColor(ContextCompat.getColor(this@LoginActivity, R.color.avail))
 
                         // Simpan data ke SharedPreferences
-                        with(sharedPref.edit()) {
-                            putString("user_id", user.id)
-                            putString("username", user.username)
-                            putString("role", user.role)
-                            if (user.tenantId != null) {
-                                putInt("tenant_id", user.tenantId)
-                            }
-                            apply()
-                            Log.d("LoginActivity", "User ID: ${user.id}")
+                        // Simpan data ke SharedPreferences
+                        val editor = sharedPref.edit() // Dapatkan editor
+                        editor.putString("user_id", user.id) // Asumsikan user.id adalah String
+                        editor.putString("username", user.username)
+                        editor.putString("role", user.role)
+
+                        // Ambil tenant_id sebagai String dari model User
+                        val tenantIdString = user.tenantId
+                        Log.d("LoginActivity", "Retrieved User: ID=${user.id}, Username=${user.username}, Role=${user.role}, Tenant ID (String)=${tenantIdString}")
+
+                        // Konversi tenantId dari String ke Int secara aman sebelum disimpan
+                        tenantIdString?.toIntOrNull()?.let { tenantIdInt ->
+                            editor.putInt("tenant_id", tenantIdInt)
+                            Log.d("LoginActivity", "Tenant ID saved to SharedPreferences: $tenantIdInt")
+                        } ?: run {
+                            // Ini akan dieksekusi jika tenantIdString adalah null atau tidak bisa dikonversi ke Int
+                            Log.w("LoginActivity", "Tenant ID is NULL or not a valid number (${tenantIdString}) for user ${user.username}. Not saving to SharedPreferences.")
+                            editor.remove("tenant_id") // Hapus kunci jika tidak valid
                         }
+                        editor.apply() // <<< PERBAIKAN UTAMA: GANTI apply() menjadi commit() >>>
+                        Log.d("LoginActivity", "SharedPreferences commit() executed.") // Log konfirmasi
 
                         // Arahkan berdasarkan role
                         when (user.role.lowercase()) {

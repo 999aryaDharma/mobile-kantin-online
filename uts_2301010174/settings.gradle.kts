@@ -17,6 +17,10 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+    versionCatalogs {
+        create("libs") { // 'libs' adalah nama default untuk katalog Anda
+        }
+    }
 }
 
 rootProject.name = "uts_2301010174"

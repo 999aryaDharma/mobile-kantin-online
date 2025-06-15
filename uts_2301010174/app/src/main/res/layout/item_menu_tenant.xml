@@ -43,18 +43,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@id/foodImageContainer"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ivEdit"
             tools:text="Mie Goreng" />
-
-        <!-- Edit Icon -->
-        <ImageView
-            android:id="@+id/ivEdit"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/edit"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#FFAD01" />
 
         <!-- Food Description -->
         <TextView

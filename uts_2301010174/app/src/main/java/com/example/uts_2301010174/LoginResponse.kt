@@ -12,5 +12,5 @@ data class UserData(
     val id: String,
     val username: String,
     val role: String,
-    @SerializedName("tenant_id") val tenantId: Int?
+    @SerializedName("tenant_id") val tenantId: String
 )

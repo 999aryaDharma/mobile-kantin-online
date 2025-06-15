@@ -4,15 +4,20 @@ package com.example.uts_2301010174
 import com.example.uts_2301010174.user.CartResponse
 import com.example.uts_2301010174.user.CartSimpleResponse
 import com.example.uts_2301010174.user.CategoryModels
+import com.example.uts_2301010174.user.MenuAddResponse
 import com.example.uts_2301010174.user.MenuResponse
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Query
 
 interface ApiService {
@@ -60,4 +65,36 @@ interface ApiService {
 
     @GET("clear_cart.php")
     fun clearCart(@Query("user_id") userId: Int): Call<CartSimpleResponse>
+
+    // Jika Anda juga perlu mengunggah foto sebagai multipart
+    @Multipart
+    @POST("add_menu.php") // Ganti dengan path API Anda yang sebenarnya
+    fun addMenu(
+        @Part("tenant_id") tenantId: RequestBody,
+        @Part("category_id") categoryId: RequestBody?,
+        @Part("name") name: RequestBody,
+        @Part("description") description: RequestBody?,
+        @Part photo: MultipartBody.Part?, // Untuk file foto
+        @Part("price") price: RequestBody
+    ): Call<MenuAddResponse>
+
+    @FormUrlEncoded // Untuk mengirim data sebagai form-urlencoded
+    @POST("delete_menu.php") // Pastikan path benar
+    fun deleteMenu(@Field("id") menuId: Int): Call<MenuAddResponse>
+
+    // Menggunakan Multipart untuk fleksibilitas: bisa update teks dan/atau gambar
+    @Multipart
+    @POST("edit_menu.php") // Ganti dengan path API update Anda
+    fun updateMenu(
+        @Part("id") menuId: RequestBody, // ID menu yang akan diupdate
+        @Part("tenant_id") tenantId: RequestBody, // Masih perlu untuk validasi keamanan di server
+        @Part("category_id") categoryId: RequestBody?,
+        @Part("name") name: RequestBody,
+        @Part("description") description: RequestBody?,
+        @Part photo: MultipartBody.Part?, // Opsional: kirim gambar baru jika diubah
+        @Part("price") price: RequestBody
+        // Anda juga bisa menambahkan @Part("old_photo_url") untuk memberitahu server menghapus foto lama jika diganti
+    ): Call<MenuAddResponse> // Menggunakan MenuAddResponse untuk hasil update
+    // >>> AKHIR ENDPOINT BARU <<<
+
 }

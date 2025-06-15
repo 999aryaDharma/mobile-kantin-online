@@ -19,7 +19,9 @@ class MenuTenantAdapter(
 
     interface OnItemActionListener {
         fun onSwitchAvailabilityChanged(menuId: Int, isChecked: Boolean)
+        fun onMenuItemLongClick(menu: Menu): Boolean // Metode baru untuk long click
     }
+
 
     private var actionListenerInstance: OnItemActionListener? = null
 
@@ -37,7 +39,7 @@ class MenuTenantAdapter(
             binding.tvFoodPrice.text = formatPriceToRupiah(menu.price)
             binding.tvAvailability.text = menu.isAvailable.toString()
 
-            val cleanedPhoto = menu.photo.trim().replace("\n", "")
+            val cleanedPhoto = menu.photo?.trim()?.replace("\n", "")
             val imageUrl = "http://10.0.2.2/api_menu/$cleanedPhoto"
 
             Glide.with(binding.root.context)
@@ -60,6 +62,11 @@ class MenuTenantAdapter(
             binding.switchAvailability.isChecked = menu.isAvailable == 1
             binding.switchAvailability.setOnCheckedChangeListener { _, isChecked ->
                 listenerCallback?.onSwitchAvailabilityChanged(menu.id, isChecked)
+            }
+
+            // --- MENAMBAHKAN LONG CLICK LISTENER KE SELURUH ITEM VIEW ---
+            binding.root.setOnLongClickListener {
+                listenerCallback?.onMenuItemLongClick(menu) ?: false // Panggil metode long click di listener
             }
         }
     }
