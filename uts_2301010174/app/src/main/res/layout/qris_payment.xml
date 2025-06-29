@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_yellow">
+    android:background="@drawable/gradient_background"
+    tools:context=".QrisPaymentActivity">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -15,14 +17,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:gravity="center_horizontal">
 
             <!-- Header Section -->
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                android:layout_height="24dp"
                 android:layout_marginBottom="24dp">
 
                 <ImageButton
@@ -36,18 +37,18 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
                     android:text="Pembayaran QRIS"
                     android:textColor="@color/black"
                     android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:gravity="center" />
+                    android:textStyle="bold" />
 
                 <View
                     android:layout_width="24dp"
                     android:layout_height="24dp" />
-            </LinearLayout>
+            </RelativeLayout>
 
             <!-- Payment Status -->
             <androidx.cardview.widget.CardView
@@ -154,6 +155,63 @@
                         android:textSize="24sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="16dp" />
+
+                    <!-- >>> BARU: TextViews untuk detail order tambahan <<< -->
+                    <TextView
+                        android:id="@+id/tvOrderId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Order ID: N/A"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvCustomerName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pelanggan: "
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvNotes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Catatan: -"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="16dp" />
+                    <!-- >>> AKHIR BARU <<< -->
+
+                    <!-- Timer -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_tag"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/timer"
+                            android:contentDescription="Timer Icon"
+                            android:layout_marginEnd="4dp"
+                            app:tint="@color/red" />
+
+                        <TextView
+                            android:id="@+id/textViewTimer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="14:59"
+                            android:textColor="@color/red"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -296,14 +354,26 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />
 
+                    <!-- >>> BARU: TextView untuk Nama Tenant <<< -->
                     <TextView
+                        android:id="@+id/tvTenantName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Warung Kampus"
                         android:textColor="@color/dark_gray"
                         android:textSize="14sp"
                         android:layout_marginBottom="8dp" />
+                    <!-- >>> AKHIR BARU <<< -->
 
+
+                    <!-- >>> BARU: Container untuk item-item order dinamis <<< -->
+                    <LinearLayout
+                        android:id="@+id/linearLayoutOrderItems"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="8dp" />
+                    <!-- Contoh statis yang akan dihapus:
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -325,7 +395,7 @@
                             android:textColor="@color/black"
                             android:textSize="14sp" />
                     </LinearLayout>
-
+                    -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
@@ -347,6 +417,7 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/textViewDetailTotalAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Rp 15.000,00"
@@ -362,7 +433,7 @@
                 android:id="@+id/btnConfirmPayment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/light_gray"
+                app:cardBackgroundColor="@color/primary_yellow"
                 app:cardCornerRadius="24dp"
                 android:layout_marginBottom="18dp"
                 app:cardElevation="2dp">

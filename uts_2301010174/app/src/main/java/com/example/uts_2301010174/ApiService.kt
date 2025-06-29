@@ -66,9 +66,8 @@ interface ApiService {
     @GET("clear_cart.php")
     fun clearCart(@Query("user_id") userId: Int): Call<CartSimpleResponse>
 
-    // Jika Anda juga perlu mengunggah foto sebagai multipart
     @Multipart
-    @POST("add_menu.php") // Ganti dengan path API Anda yang sebenarnya
+    @POST("add_menu.php")
     fun addMenu(
         @Part("tenant_id") tenantId: RequestBody,
         @Part("category_id") categoryId: RequestBody?,
@@ -79,22 +78,22 @@ interface ApiService {
     ): Call<MenuAddResponse>
 
     @FormUrlEncoded // Untuk mengirim data sebagai form-urlencoded
-    @POST("delete_menu.php") // Pastikan path benar
+    @POST("delete_menu.php")
     fun deleteMenu(@Field("id") menuId: Int): Call<MenuAddResponse>
 
     // Menggunakan Multipart untuk fleksibilitas: bisa update teks dan/atau gambar
     @Multipart
-    @POST("edit_menu.php") // Ganti dengan path API update Anda
+    @POST("edit_menu.php")
     fun updateMenu(
-        @Part("id") menuId: RequestBody, // ID menu yang akan diupdate
-        @Part("tenant_id") tenantId: RequestBody, // Masih perlu untuk validasi keamanan di server
+        @Part("id") menuId: RequestBody,
+        @Part("tenant_id") tenantId: RequestBody,
         @Part("category_id") categoryId: RequestBody?,
         @Part("name") name: RequestBody,
         @Part("description") description: RequestBody?,
-        @Part photo: MultipartBody.Part?, // Opsional: kirim gambar baru jika diubah
+        @Part photo: MultipartBody.Part?,
         @Part("price") price: RequestBody
-        // Anda juga bisa menambahkan @Part("old_photo_url") untuk memberitahu server menghapus foto lama jika diganti
-    ): Call<MenuAddResponse> // Menggunakan MenuAddResponse untuk hasil update
-    // >>> AKHIR ENDPOINT BARU <<<
+    ): Call<MenuAddResponse>
 
+    @POST("checkout.php")
+    fun checkout(@Body orderRequest: OrderRequest): Call<CheckoutResponse>
 }

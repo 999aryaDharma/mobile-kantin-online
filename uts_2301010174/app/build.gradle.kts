@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.espresso.core)
     //noinspection KaptUsageInsteadOfKsp
     kapt(libs.glide.compiler)  // ini valid
 

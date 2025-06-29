@@ -1,121 +1,154 @@
 package com.example.uts_2301010174.user
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.uts_2301010174.CheckoutActivity
 import com.example.uts_2301010174.R
 import com.example.uts_2301010174.RetrofitClient
+import com.example.uts_2301010174.adapter.CartAdapter
 import com.example.uts_2301010174.databinding.CartPageBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.NumberFormat // Import NumberFormat
 
 class CartActivity : AppCompatActivity() {
     private lateinit var binding: CartPageBinding
+    private lateinit var recyclerViewCartItems: RecyclerView
     private lateinit var cartAdapter: CartAdapter
     private var cartItems: MutableList<CartItem> = mutableListOf()
+
+    private lateinit var tvTotalPrice: TextView
+    private lateinit var tvCartItemsTitle: TextView
+    private lateinit var btnClearCart: View
+    private lateinit var btnCheckout: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = CartPageBinding.inflate(layoutInflater)
         setContentView(binding.root)
+//        setContentView(R.layout.cart_page) // Pastikan ID layout keranjang Anda
 
-        // Setup tombol kembali
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
         btnBack.setOnClickListener {
-            finish() // kembali ke activity sebelumnya (MainActivity)
+            finish()
         }
 
-        // Inisialisasi RecyclerView
+        // Inisialisasi semua View menggunakan findViewById
+        recyclerViewCartItems = findViewById(R.id.rvCartItems)
+        tvTotalPrice = findViewById(R.id.tvTotalPrice)
+        tvCartItemsTitle = findViewById(R.id.tvCartItemsTitle)
+        btnClearCart = findViewById(R.id.btnClearCart)
+        btnCheckout = findViewById(R.id.btnCheckout)
+
         cartAdapter = CartAdapter(
             cartItems,
             onQuantityChanged = { cartItem, newQuantity ->
-                updateCartItem(cartItem, newQuantity)
+                Log.d("CartActivity", "Quantity changed callback: ${cartItem.menuName}, newQty: $newQuantity")
+                updateCartItemQuantity(cartItem, newQuantity)
             },
             onItemDeleted = { cartItem ->
+                Log.d("CartActivity", "Item deleted callback: ${cartItem.menuName}")
                 deleteCartItem(cartItem)
             }
         )
-        binding.rvCartItems.layoutManager = LinearLayoutManager(this)
-        binding.rvCartItems.adapter = cartAdapter
+        recyclerViewCartItems.layoutManager = LinearLayoutManager(this)
+        recyclerViewCartItems.adapter = cartAdapter
 
-        // Ambil data keranjang
-        fetchCartItems()
-
-        // Handle tombol Clear Cart
-        binding.btnClearCart.setOnClickListener {
+        btnClearCart.setOnClickListener {
             if (cartItems.isEmpty()) {
                 Toast.makeText(this, "Keranjang sudah kosong!", Toast.LENGTH_SHORT).show()
             } else {
-                clearCart()
+                clearCartConfirmation()
             }
         }
 
-        // Handle tombol Checkout
-        binding.btnCheckout.setOnClickListener {
+        btnCheckout.setOnClickListener {
             if (cartItems.isEmpty()) {
                 Toast.makeText(this, "Keranjang kosong!", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Fitur checkout belum diimplementasikan.", Toast.LENGTH_SHORT).show()
-                // Implementasikan logika checkout di sini
+                // Lanjutkan ke CheckoutActivity
+                val intent = Intent(this, CheckoutActivity::class.java).apply {
+                    putParcelableArrayListExtra("cart_items", ArrayList(cartItems)) // Kirim list of CartItem
+                }
+                startActivity(intent)
             }
         }
-
-
-        // Perbarui jumlah item di tvCartItemsTitle
-        updateCartItemCount()
-
-
     }
 
     override fun onResume() {
         super.onResume()
-        // Perbarui badge dengan data terbaru
         fetchCartItems()
     }
 
     private fun fetchCartItems() {
-        val userId = getUserIdFromSharedPrefs() // Ganti dengan metode Anda untuk mendapatkan user_id
+        val userId = getUserIdFromSharedPrefs()
         if (userId <= 0) {
             Toast.makeText(this, "User ID tidak valid. Silakan login kembali.", Toast.LENGTH_SHORT).show()
+            Log.e("CartActivity", "User ID invalid for fetching cart items: $userId")
+            cartItems.clear() // Hapus item lama
+            cartAdapter.notifyDataSetChanged() // Beri tahu adapter data berubah
+            updateTotalPrice()
+            updateCartItemCount()
             return
         }
 
+        Log.d("CartActivity", "Fetching cart items for User ID: $userId")
         RetrofitClient.instance.getCartItems(userId).enqueue(object : Callback<CartResponse> {
             override fun onResponse(call: Call<CartResponse>, response: Response<CartResponse>) {
                 if (response.isSuccessful) {
                     val res = response.body()
-                    if (res?.success == true && res.data != null) {
-                        cartItems.clear()
-                        cartItems.addAll(res.data)
-                        cartAdapter.updateCartItems(cartItems)
+                    Log.d("CartActivity", "API Response: success=${res?.success}, message=${res?.message}, data size=${res?.data?.size ?: 0}")
+                    if (res?.data != null && res.data.isNotEmpty()) {
+                        Log.d("CartActivity", "Sample first item from API: ${res.data.first()}")
+
+                        cartItems.clear() // Hapus item lama
+                        cartItems.addAll(res.data) // Tambahkan item baru
+                        cartAdapter.notifyDataSetChanged() // Beri tahu adapter data berubah
+                        Log.d("CartActivity", "Tenan ID dari API: ${res.data.first().tenantId}" )
                         updateTotalPrice()
-                        // Perbarui jumlah item di tvCartItemsTitle
                         updateCartItemCount()
-                        Log.d("CartDebug", "Fetched ${res.data.size} items")
+                        Log.d("CartActivity", "Fetched ${res.data.size} items. Total price: ${cartItems.sumOf { it.getTotalPrice() }}")
                     } else {
                         Toast.makeText(this@CartActivity, res?.message ?: "Gagal memuat keranjang.", Toast.LENGTH_SHORT).show()
-                        Log.e("CartDebug", "API Success false: ${res?.message}")
+                        Log.d("CartActivity", "API Success false or data null/empty: ${res?.message}")
+                        cartItems.clear() // Kosongkan jika data tidak ada
+                        cartAdapter.notifyDataSetChanged() // Beri tahu adapter data berubah
+                        updateTotalPrice()
+                        updateCartItemCount()
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Toast.makeText(this@CartActivity, "Error response ${response.code()}: $errorBody", Toast.LENGTH_LONG).show()
-                    Log.e("CartDebug", "HTTP Error: ${response.code()}, Error Body: $errorBody")
+                    Toast.makeText(this@CartActivity, "Gagal memuat keranjang: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Log.e("CartActivity", "HTTP Error fetching cart: ${response.code()}, Error Body: $errorBody")
+                    cartItems.clear() // Kosongkan jika error HTTP
+                    cartAdapter.notifyDataSetChanged() // Beri tahu adapter data berubah
+                    updateTotalPrice()
+                    updateCartItemCount()
                 }
             }
 
             override fun onFailure(call: Call<CartResponse>, t: Throwable) {
-                Toast.makeText(this@CartActivity, "Koneksi gagal: ${t.message}", Toast.LENGTH_LONG).show()
-                Log.e("CartDebug", "Network Error: ${t.localizedMessage}", t)
+                Toast.makeText(this@CartActivity, "Koneksi gagal saat memuat keranjang: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.e("CartActivity", "Network Error fetching cart: ${t.localizedMessage}", t)
+                cartItems.clear() // Kosongkan jika error network
+                cartAdapter.notifyDataSetChanged() // Beri tahu adapter data berubah
+                updateTotalPrice()
+                updateCartItemCount()
             }
         })
     }
 
-    private fun updateCartItem(cartItem: CartItem, newQuantity: Int) {
+    private fun updateCartItemQuantity(cartItem: CartItem, newQuantity: Int) {
         val userId = getUserIdFromSharedPrefs()
         if (userId <= 0) {
             Toast.makeText(this, "User ID tidak valid.", Toast.LENGTH_SHORT).show()
@@ -127,24 +160,22 @@ class CartActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val res = response.body()
                     if (res?.success == true) {
-                        cartItem.quantity = newQuantity
-                        cartAdapter.notifyDataSetChanged()
-                        updateTotalPrice()
                         Toast.makeText(this@CartActivity, res.message, Toast.LENGTH_SHORT).show()
+                        fetchCartItems() // Ambil ulang data dari server untuk refresh total dan kuantitas
                     } else {
                         Toast.makeText(this@CartActivity, res?.message ?: "Gagal memperbarui kuantitas.", Toast.LENGTH_SHORT).show()
-                        Log.e("CartDebug", "API Success false: ${res?.message}")
+                        Log.e("CartActivity", "API Success false in quantity update: ${res?.message}")
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Toast.makeText(this@CartActivity, "Error response ${response.code()}: $errorBody", Toast.LENGTH_LONG).show()
-                    Log.e("CartDebug", "HTTP Error: ${response.code()}, Error Body: $errorBody")
+                    Toast.makeText(this@CartActivity, "Error response ${response.code()}: $errorBody", Toast.LENGTH_SHORT).show()
+                    Log.e("CartActivity", "HTTP Error in quantity update: ${response.code()}, Error Body: $errorBody")
                 }
             }
 
             override fun onFailure(call: Call<CartSimpleResponse>, t: Throwable) {
-                Toast.makeText(this@CartActivity, "Koneksi gagal: ${t.message}", Toast.LENGTH_LONG).show()
-                Log.e("CartDebug", "Network Error: ${t.localizedMessage}", t)
+                Toast.makeText(this@CartActivity, "Koneksi gagal: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.e("CartActivity", "Network Error: ${t.localizedMessage}", t)
             }
         })
     }
@@ -162,36 +193,45 @@ class CartActivity : AppCompatActivity() {
                     val res = response.body()
                     if (res?.success == true) {
                         Toast.makeText(this@CartActivity, res.message, Toast.LENGTH_SHORT).show()
-                        updateTotalPrice()
+                        fetchCartItems() // Ambil ulang data dari server untuk refresh daftar
                     } else {
                         Toast.makeText(this@CartActivity, res?.message ?: "Gagal menghapus item.", Toast.LENGTH_SHORT).show()
-                        Log.e("CartDebug", "API Success false: ${res?.message}")
+                        Log.e("CartActivity", "API Success false in delete item: ${res?.message}")
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Toast.makeText(this@CartActivity, "Error response ${response.code()}: $errorBody", Toast.LENGTH_LONG).show()
-                    Log.e("CartDebug", "HTTP Error: ${response.code()}, Error Body: $errorBody")
+                    Toast.makeText(this@CartActivity, "Error response ${response.code()}: $errorBody", Toast.LENGTH_SHORT).show()
+                    Log.e("CartActivity", "HTTP Error in delete item: ${response.code()}, Error Body: $errorBody")
                 }
             }
 
             override fun onFailure(call: Call<CartSimpleResponse>, t: Throwable) {
-                Toast.makeText(this@CartActivity, "Koneksi gagal: ${t.message}", Toast.LENGTH_LONG).show()
-                Log.e("CartDebug", "Network Error: ${t.localizedMessage}", t)
+                Toast.makeText(this@CartActivity, "Koneksi gagal: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.e("CartActivity", "Network Error: ${t.localizedMessage}", t)
             }
         })
     }
 
     private fun updateTotalPrice() {
-        val total = cartItems.sumOf { it.menuPrice * it.quantity }
-        binding.tvTotalPrice.text = "${formatPrice(total)}"
+        val total = cartItems.sumOf { it.getTotalPrice().toDouble() } // Convert to Double for formatting
+        binding.tvTotalPrice.text = "Rp ${formatPrice(total)}"
     }
 
-    private fun formatPrice(price: Int): String {
-        return String.format("%,d", price).replace(',', '.')
+    private fun updateSubtotalPrice() {
+        val subtotal = cartItems.sumOf { it.getTotalPrice().toDouble() } // Convert to Double for formatting
+        binding.textViewSubtotal.text = "Rp ${formatPrice(subtotal)}"
     }
+
+    private fun formatPrice(price: Double): String {
+        val formatter = NumberFormat.getNumberInstance(java.util.Locale("in", "ID"))
+        formatter.minimumFractionDigits = 0 // No decimal places for whole numbers like 15000
+        formatter.maximumFractionDigits = 2 // Max 2 decimal places if there are cents
+        return formatter.format(price).replace("Rp", "").trim() // Remove currency symbol if desired
+    }
+
 
     private fun getUserIdFromSharedPrefs(): Int {
-        val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val userId = sharedPref.getString("user_id", null)?.toIntOrNull() ?: 0
         Log.d("User debug", "User ID dari SharedPreferences: $userId")
         return userId
@@ -203,8 +243,22 @@ class CartActivity : AppCompatActivity() {
 
 
     private fun saveCartCount(count: Int) {
-        val sharedPrefs = getSharedPreferences("UserPrefs", MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
         sharedPrefs.edit().putInt("cart_count", count).apply()
+    }
+
+    private fun clearCartConfirmation() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Konfirmasi Kosongkan Keranjang")
+            .setMessage("Anda yakin ingin mengosongkan semua item di keranjang?")
+            .setPositiveButton("Ya, Kosongkan") { dialog, _ ->
+                clearCart()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Batal") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun clearCart() {
@@ -220,7 +274,7 @@ class CartActivity : AppCompatActivity() {
                     val res = response.body()
                     if (res?.success == true) {
                         cartItems.clear()
-                        cartAdapter.updateCartItems(cartItems)
+                        cartAdapter.notifyDataSetChanged() // Beri tahu adapter data berubah
                         updateTotalPrice()
                         updateCartItemCount()
                         saveCartCount(0)
@@ -243,6 +297,4 @@ class CartActivity : AppCompatActivity() {
             }
         })
     }
-
-
 }

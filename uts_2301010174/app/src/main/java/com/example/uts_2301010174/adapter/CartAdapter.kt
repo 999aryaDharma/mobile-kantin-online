@@ -1,4 +1,4 @@
-package com.example.uts_2301010174.user
+package com.example.uts_2301010174.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -8,6 +8,8 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.uts_2301010174.R
+import com.example.uts_2301010174.user.CartItem
+import java.text.NumberFormat
 
 class CartAdapter(
     private var cartItems: MutableList<CartItem>,
@@ -18,7 +20,7 @@ class CartAdapter(
     class CartViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textViewMenuName: TextView = itemView.findViewById(R.id.textViewMenuName)
         val textViewMenuPrice: TextView = itemView.findViewById(R.id.textMenuPrice)
-//        val textViewQuantity: TextView = itemView.findViewById(R.id.textViewQuantity)
+        //        val textViewQuantity: TextView = itemView.findViewById(R.id.textViewQuantity)
         val textQuantity: TextView = itemView.findViewById(R.id.textQuantity)
         val btnDecrease: CardView = itemView.findViewById(R.id.btnDecrease)
         val btnIncrease: CardView = itemView.findViewById(R.id.btnIncrease)
@@ -37,7 +39,7 @@ class CartAdapter(
         val cartItem = cartItems[position]
 
         holder.textViewMenuName.text = cartItem.menuName
-        holder.textViewMenuPrice.text = "Rp ${formatPrice(cartItem.menuPrice)}"
+        holder.textViewMenuPrice.text = "Rp ${formatPrice(cartItem.menuPrice.toDouble())}"
         holder.textQuantity.text = cartItem.quantity.toString()
 //        holder.textViewQuantityDisplay.text = cartItem.quantity.toString()
 
@@ -81,7 +83,10 @@ class CartAdapter(
         notifyDataSetChanged()
     }
 
-    private fun formatPrice(price: Int): String {
-        return String.format("%,d", price).replace(',', '.')
+    private fun formatPrice(price: Double): String {
+        val formatter = NumberFormat.getNumberInstance(java.util.Locale("in", "ID"))
+        formatter.minimumFractionDigits = 0 // No decimal places for whole numbers like 15000
+        formatter.maximumFractionDigits = 2 // Max 2 decimal places if there are cents
+        return formatter.format(price).replace("Rp", "").trim() // Remove currency symbol if desired
     }
 }
