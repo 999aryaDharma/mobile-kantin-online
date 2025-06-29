@@ -17,7 +17,6 @@ class MenuViewModel(application: Application, private val repository: MenuReposi
     private val _addMenuError = MutableLiveData<String?>()
     val addMenuError: MutableLiveData<String?> = _addMenuError
 
-    // >>> LIVE DATA UNTUK UPDATE MENU <<<
     private val _updateMenuResult = MutableLiveData<Boolean>()
     val updateMenuResult: LiveData<Boolean> = _updateMenuResult
 

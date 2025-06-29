@@ -66,7 +66,7 @@ class MenuTenantAdapter(
 
             // --- MENAMBAHKAN LONG CLICK LISTENER KE SELURUH ITEM VIEW ---
             binding.root.setOnLongClickListener {
-                listenerCallback?.onMenuItemLongClick(menu) ?: false // Panggil metode long click di listener
+                listenerCallback?.onMenuItemLongClick(menu) ?: true // Panggil metode long click di listener
             }
         }
     }

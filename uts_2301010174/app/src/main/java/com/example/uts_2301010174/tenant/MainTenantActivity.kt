@@ -56,8 +56,6 @@ class MainTenantActivity : AppCompatActivity(), MenuTenantAdapter.OnItemActionLi
     private lateinit var apiService: ApiService
     private lateinit var menuRepository: MenuRepository
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupViewBinding()
@@ -92,9 +90,9 @@ class MainTenantActivity : AppCompatActivity(), MenuTenantAdapter.OnItemActionLi
         // --- SET UP LONG CLICK LISTENER DARI ADAPTER ---
         menuAdapter.setOnItemActionListener(this)
 
-        val BASE_URL = "http://10.0.2.2/api_menu/" // Ganti dengan Base URL API Anda
+        val baseUrl = "http://10.0.2.2/api_menu/" // Ganti dengan Base URL API Anda
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
@@ -390,7 +388,7 @@ class MainTenantActivity : AppCompatActivity(), MenuTenantAdapter.OnItemActionLi
         val btnDelete = dialogView.findViewById<Button>(R.id.btnDelete)
 
         dialogTitle.text = "Konfirmasi Hapus Menu"
-        dialogMessage.text = "Anda yakin ingin menghapus menu '${menu.name}' (ID: ${menu.id})?"
+        dialogMessage.text = "Anda yakin ingin menghapus menu '${menu.name}'?"
 
         val alertDialog = AlertDialog.Builder(this)
             .setView(dialogView)

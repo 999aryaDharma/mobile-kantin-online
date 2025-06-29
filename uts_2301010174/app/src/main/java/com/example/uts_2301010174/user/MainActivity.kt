@@ -110,17 +110,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveCartCount(count: Int) {
-        val sharedPrefs = getSharedPreferences("UserPrefs", MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
         sharedPrefs.edit().putInt("cart_count", count).apply()
     }
 
     private fun getCartCount(): Int {
-        val sharedPrefs = getSharedPreferences("UserPrefs", MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
         return sharedPrefs.getInt("cart_count", 0)
     }
 
     private fun getUserIdFromSharedPrefs(): Int {
-        val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val userId = sharedPref.getString("user_id", null)?.toIntOrNull() ?: 0
         Log.d("User debug", "User ID dari SharedPreferences: $userId")
         return userId

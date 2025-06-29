@@ -29,34 +29,32 @@ import retrofit2.Response
 
 class MenuDetailActivity : AppCompatActivity() {
 
-    private lateinit var binding: MenuDetailBinding // Jika menggunakan ViewBinding
+    private lateinit var binding: MenuDetailBinding
     private lateinit var recyclerViewMenu: RecyclerView
     private lateinit var menuAdapter: MenuAdapter
-    private var listMenuForAdapter = mutableListOf<Menu>() // List yang akan digunakan oleh adapter
-    private lateinit var allMenus: List<Menu> // Simpan semua menu di sini
+    private var listMenuForAdapter = mutableListOf<Menu>()
+    private lateinit var allMenus: List<Menu>
 
     private lateinit var chipGroupCategories: ChipGroup
     private lateinit var chipAll: Chip
-    private lateinit var searchMenu: EditText // Search EditText
+    private lateinit var searchMenu: EditText
 
     private lateinit var ivCartIcon: ImageView
 
-    // Variabel untuk menyimpan filter yang sedang aktif
-    private var currentCategoryId: String? = null
+    private var currentCategoryId: Int? = null // Ubah ke Int? untuk ID kategori
     private var currentSearchQuery: String = ""
+
+    private var currentTenantId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = MenuDetailBinding.inflate(layoutInflater) // Jika menggunakan ViewBinding
-        setContentView(binding.root) // Jika menggunakan ViewBinding
-        // setContentView(R.layout.activity_menu_detail) // Jika tidak menggunakan ViewBinding
+        binding = MenuDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        recyclerViewMenu = binding.rvMenu // Jika menggunakan ViewBinding dan ID-nya rvMenu
-        // recyclerViewMenu = findViewById(R.id.rvMenu) // Jika tidak menggunakan ViewBinding
+        recyclerViewMenu = binding.rvMenu
 
         recyclerViewMenu.layoutManager = LinearLayoutManager(this)
 
-        // Inisialisasi adapter dengan list kosong (atau list yang sudah ada jika ada)
         menuAdapter = MenuAdapter(listMenuForAdapter) {menu, quantity ->
             saveToCart(menu, quantity)
             Log.d("AddMenuCart", "Menu added to cart: $menu, Quantity: $quantity")
@@ -65,27 +63,24 @@ class MenuDetailActivity : AppCompatActivity() {
 
         chipGroupCategories = findViewById(R.id.chipGroupCategories)
         chipAll = findViewById(R.id.chipAll)
-        searchMenu = findViewById(R.id.searchMenu) // Inisialisasi search EditText
+        searchMenu = findViewById(R.id.searchMenu)
 
-        setupSearchListener() // Setup listener untuk search
+        setupSearchListener()
 
         chipAll.setOnClickListener {
             chipAll.isChecked = true
-            currentCategoryId = null // Reset category filter
+            currentCategoryId = null
             Toast.makeText(this, "Menampilkan semua item", Toast.LENGTH_SHORT).show()
-            applyFilters() // Terapkan filter dengan search query yang ada
+            applyFilters()
         }
 
-        allMenus = emptyList() // Inisialisasi kosong
+        allMenus = emptyList()
 
         val tenantId = intent.getIntExtra("TENANT_ID", -1)
         Log.d("MenuDetail", "Received tenant ID: $tenantId")
 
         if (tenantId != -1) {
-            // Panggil fungsi untuk mengambil kategori dari API
             fetchCategoriesFromApi()
-
-            // Hanya panggil satu API - berdasarkan tenant ID
             getAvailableMenuByTenantId(tenantId)
         } else {
             Log.e("MenuDetailActivity", "Tenant ID tidak valid.")
@@ -93,31 +88,46 @@ class MenuDetailActivity : AppCompatActivity() {
             finish()
         }
 
-        // Setup tombol kembali
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
         btnBack.setOnClickListener {
-            finish() // kembali ke activity sebelumnya (MainActivity)
+            finish()
+        }
+
+        // Ambil tenantId saat Activity ini dibuat
+        currentTenantId = intent.getIntExtra("TENANT_ID", -1) // Pastikan ini diambil dari Intent saat MenuDetailActivity diluncurkan
+        Log.d("MenuDetail", "Received tenant ID: $currentTenantId")
+
+
+        if (currentTenantId != -1) {
+            fetchCategoriesFromApi()
+            getAvailableMenuByTenantId(currentTenantId)
+        } else {
+            Log.e("MenuDetailActivity", "Tenant ID tidak valid.")
+            Toast.makeText(this, "Tenant ID tidak ditemukan", Toast.LENGTH_SHORT).show()
+            finish()
         }
 
         ivCartIcon = findViewById(R.id.ivCartIcon)
 
         ivCartIcon.setOnClickListener {
             val intent = Intent(this, CartActivity::class.java)
+            // >>> PERBAIKAN: Kirim tenantId ke CartActivity <<<
+            intent.putExtra("TENANT_ID", currentTenantId) // Kirim tenantId yang sudah didapatkan
+            // >>> AKHIR PERBAIKAN <<<
             startActivity(intent)
+            Log.d("MenuDetailActivity", "Cart icon clicked. Tenant ID: $currentTenantId")
         }
 
-        // Perbarui badge dari SharedPreferences
-        updateCartBadge(getCartCount())
+        // Tidak perlu memanggil updateCartBadge(getCartCount()) di onCreate, onResume sudah cukup
     }
 
-    // Setup listener untuk search EditText
     private fun setupSearchListener() {
         searchMenu.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 currentSearchQuery = s.toString().trim()
-                applyFilters() // Terapkan filter setiap kali text berubah
+                applyFilters()
             }
 
             override fun afterTextChanged(s: Editable?) {}
@@ -126,30 +136,28 @@ class MenuDetailActivity : AppCompatActivity() {
 
     private fun getAvailableMenuByTenantId(tenantId: Int) {
         Log.d("MenuDetailActivity", "Fetching menu for tenant ID: $tenantId")
-        // Menggunakan Retrofit Call (seperti pada kode Anda sebelumnya)
-        RetrofitClient.instance.getAvailableMenuByTenantId(tenantId) // Asumsi method ini mengembalikan Call<MenuResponse>
+        RetrofitClient.instance.getAvailableMenuByTenantId(tenantId)
             .enqueue(object : Callback<MenuResponse> {
                 @SuppressLint("NotifyDataSetChanged")
                 override fun onResponse(call: Call<MenuResponse>, response: Response<MenuResponse>) {
                     if (response.isSuccessful) {
                         val menuResponse = response.body()
                         if (menuResponse != null) {
-                            // AMBIL LIST MENU DARI PROPERTI 'data' DI MenuResponse
                             val menusFromApi = menuResponse.data
                             Log.d("MenuDetailActivity", "Jumlah menu dari API: ${menusFromApi.size}")
 
-                            // PENTING: Simpan ke allMenus untuk search functionality
                             allMenus = menusFromApi
                             Log.d("MenuFilter", "getDataMenuByTenantId: allMenus updated with ${allMenus.size} items")
 
-                            // Update adapter
                             listMenuForAdapter.clear()
                             listMenuForAdapter.addAll(menusFromApi)
                             menuAdapter.notifyDataSetChanged()
 
-                            // Log beberapa sample menu untuk debugging
                             if (menusFromApi.isNotEmpty()) {
                                 Log.d("MenuFilter", "Sample menu item: ${menusFromApi.first()}")
+                                menusFromApi.first().let { sampleMenu ->
+                                    Log.d("MenuFilter", "Sample menu categoryId: ${sampleMenu.categoryId}, categoryName/category: ${sampleMenu.category ?: sampleMenu.category}")
+                                }
                             }
                         } else {
                             Log.e("MenuDetailActivity", "Response body is null")
@@ -214,13 +222,13 @@ class MenuDetailActivity : AppCompatActivity() {
         categories.forEach { category ->
             val chip = layoutInflater.inflate(R.layout.item_category_chip, chipGroupCategories, false) as Chip
             chip.text = category.name
-            chip.tag = category.name // Simpan ID kategori di tag chip
+            chip.tag = category.id // Simpan ID kategori di tag chip
             chip.setTextColor(resources.getColor(R.color.dark_gray, theme))
             chip.chipBackgroundColor = resources.getColorStateList(R.color.light_gray, theme)
 
             chip.setOnClickListener {
                 chipAll.isChecked = false
-                currentCategoryId = chip.tag.toString()
+                currentCategoryId = chip.tag.toString().toIntOrNull() // Konversi tag (ID) ke Int
                 Toast.makeText(this, "Kategori dipilih: ${chip.text}", Toast.LENGTH_SHORT).show()
                 applyFilters()
             }
@@ -231,91 +239,47 @@ class MenuDetailActivity : AppCompatActivity() {
     }
 
 
-    // Fungsi utama untuk menerapkan semua filter (kategori + search)
     private fun applyFilters() {
         var filteredList = allMenus
 
-        // Debug: Log jumlah menu yang tersedia
         Log.d("MenuFilter", "Total menus available: ${allMenus.size}")
         Log.d("MenuFilter", "Current search query: '$currentSearchQuery'")
-        Log.d("MenuFilter", "Current category ID: '$currentCategoryId'")
+        Log.d("MenuFilter", "Current category ID (for filter): '$currentCategoryId'")
 
-        // Filter berdasarkan kategori
-        if (!currentCategoryId.isNullOrEmpty()) {
-            filteredList = filteredList.filter { it.category == currentCategoryId }
+        if (currentCategoryId != null) {
+            filteredList = filteredList.filter { it.categoryId == currentCategoryId }
             Log.d("MenuFilter", "After category filter: ${filteredList.size}")
         }
 
-        // Filter berdasarkan search query
         if (currentSearchQuery.isNotEmpty()) {
             filteredList = filteredList.filter { menu ->
-                // Debug: Log semua properti menu menggunakan reflection
-                try {
-                    val menuClass = menu.javaClass
-                    val fields = menuClass.declaredFields
-                    Log.d("MenuFilter", "=== Menu Object Debug ===")
-                    fields.forEach { field ->
-                        field.isAccessible = true
-                        val value = field.get(menu)
-                        Log.d("MenuFilter", "Field: ${field.name} = $value (${field.type.simpleName})")
-                    }
-                    Log.d("MenuFilter", "========================")
-                } catch (e: Exception) {
-                    Log.e("MenuFilter", "Error debugging menu object: ${e.message}")
-                }
+                val matches = menu.name.contains(currentSearchQuery, ignoreCase = true) ||
+                        (menu.description?.contains(currentSearchQuery, ignoreCase = true) == true) ||
+                        (menu.category?.contains(currentSearchQuery, ignoreCase = true) == true) ||
+                        (menu.category?.contains(currentSearchQuery, ignoreCase = true) == true)
 
-                // Coba semua field String dalam object Menu
-                val result = try {
-                    val menuClass = menu.javaClass
-                    val fields = menuClass.declaredFields
-
-                    fields.any { field ->
-                        if (field.type == String::class.java) {
-                            field.isAccessible = true
-                            val value = field.get(menu) as? String
-                            val matches = value?.contains(currentSearchQuery, ignoreCase = true) == true
-                            if (matches) {
-                                Log.d("MenuFilter", "Match found in field '${field.name}': '$value'")
-                            }
-                            matches
-                        } else {
-                            false
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e("MenuFilter", "Error in search filter: ${e.message}")
-                    false
-                }
-
-                Log.d("MenuFilter", "Menu search result: $result for query '$currentSearchQuery'")
-                result
+                Log.d("MenuFilter", "Menu search result: $matches for query '$currentSearchQuery'")
+                matches
             }
             Log.d("MenuFilter", "After search filter: ${filteredList.size}")
         }
 
-        menuAdapter.updateData(filteredList) // Perbarui RecyclerView
+        menuAdapter.updateData(filteredList)
         Log.d("MenuFilter", "Final filtered list size: ${filteredList.size}")
 
-        // Tampilkan pesan jika tidak ada hasil
         if (filteredList.isEmpty()) {
             val message = when {
-                currentSearchQuery.isNotEmpty() && !currentCategoryId.isNullOrEmpty() ->
+                currentSearchQuery.isNotEmpty() && currentCategoryId != null ->
                     "Tidak ada menu ditemukan untuk pencarian '$currentSearchQuery' dalam kategori ini."
                 currentSearchQuery.isNotEmpty() ->
                     "Tidak ada menu ditemukan untuk pencarian '$currentSearchQuery'."
-                !currentCategoryId.isNullOrEmpty() ->
+                currentCategoryId != null ->
                     "Tidak ada menu ditemukan untuk kategori ini."
                 else ->
                     "Tidak ada menu tersedia."
             }
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
-    }
-
-    // Fungsi untuk memfilter dan menampilkan menu secara lokal (DEPRECATED - diganti dengan applyFilters)
-    private fun displayFilteredMenus(categoryId: String?) {
-        currentCategoryId = categoryId
-        applyFilters()
     }
 
     private fun saveToCart(menu: Menu, quantity: Int) {
@@ -330,6 +294,8 @@ class MenuDetailActivity : AppCompatActivity() {
                         val res = response.body()
                         if (res?.success == true) {
                             Toast.makeText(this@MenuDetailActivity, res.message, Toast.LENGTH_SHORT).show()
+                            // Panggil fetchCartCount() untuk update badge secara real-time
+                            fetchCartCount()
                         } else {
                             Toast.makeText(this@MenuDetailActivity, res?.message ?: "Gagal", Toast.LENGTH_SHORT).show()
                         }
@@ -346,13 +312,20 @@ class MenuDetailActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Perbarui badge dengan data terbaru dari API
+        // Ini akan selalu memuat ulang jumlah keranjang saat Activity kembali ke foreground
         fetchCartCount()
     }
 
     private fun fetchCartCount() {
         val userId = getUserIdFromSharedPrefs()
-        if (userId <= 0) return
+        // Log ini akan memberitahu Anda user ID yang digunakan untuk API call
+        Log.d("MenuDetailActivity", "Fetching cart count for User ID: $userId")
+
+        if (userId <= 0) { // Jika user ID tidak valid, set badge ke 0 dan jangan panggil API
+            Log.e("MenuDetailActivity", "User ID is invalid or not found in SharedPreferences for fetchCartCount: $userId")
+            updateCartBadge(0)
+            return
+        }
 
         RetrofitClient.instance.getCartItems(userId).enqueue(object : Callback<CartResponse> {
             override fun onResponse(call: Call<CartResponse>, response: Response<CartResponse>) {
@@ -361,21 +334,32 @@ class MenuDetailActivity : AppCompatActivity() {
                     if (res?.success == true && res.data != null) {
                         saveCartCount(res.data.size)
                         updateCartBadge(res.data.size)
-                        Log.d("MainActivity", "Cart count: ${res.data.size}")
+                        Log.d("MenuDetailActivity", "Cart count: ${res.data.size} fetched and badge updated.")
+                    } else {
+                        Log.e("MenuDetailActivity", "Cart count API success but data null or success=false: ${res?.message}")
+                        saveCartCount(0)
+                        updateCartBadge(0)
                     }
+                } else {
+                    Log.e("MenuDetailActivity", "Failed to fetch cart items (HTTP error): ${response.code()}")
+                    saveCartCount(0)
+                    updateCartBadge(0)
                 }
             }
 
             override fun onFailure(call: Call<CartResponse>, t: Throwable) {
-                Log.e("MainActivity", "Failed to fetch cart items: ${t.message}")
+                Log.e("MenuDetailActivity", "Failed to fetch cart items (network error): ${t.message}")
+                saveCartCount(0)
+                updateCartBadge(0)
             }
         })
     }
 
     private fun getUserIdFromSharedPrefs(): Int {
-        val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        // PERBAIKAN PENTING: Gunakan nama file Shared Preferences yang konsisten
+        val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE) // Ganti "MyAppPrefs"
         val userId = sharedPref.getString("user_id", null)?.toIntOrNull() ?: 0
-        Log.d("User debug", "User ID dari SharedPreferences: $userId")
+        Log.d("User debug", "User ID dari SharedPreferences di MenuDetailActivity: $userId")
         return userId
     }
 
@@ -384,17 +368,14 @@ class MenuDetailActivity : AppCompatActivity() {
     }
 
     private fun saveCartCount(count: Int) {
-        val sharedPrefs = getSharedPreferences("UserPrefs", MODE_PRIVATE)
+        // PERBAIKAN PENTING: Gunakan nama file Shared Preferences yang konsisten
+        val sharedPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE) // Ganti "UserPrefs"
         sharedPrefs.edit().putInt("cart_count", count).apply()
     }
 
     private fun getCartCount(): Int {
-        val sharedPrefs = getSharedPreferences("UserPrefs", MODE_PRIVATE)
+        // PERBAIKAN PENTING: Gunakan nama file Shared Preferences yang konsisten
+        val sharedPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE) // Ganti "UserPrefs"
         return sharedPrefs.getInt("cart_count", 0)
     }
-
-
-
 }
-
-

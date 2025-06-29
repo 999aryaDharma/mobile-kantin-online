@@ -134,10 +134,9 @@
             <Button
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:background="@drawable/button_background"
-                android:backgroundTint="#FDFDFD"
+                android:backgroundTint="@color/accent_yellow"
                 android:drawableEnd="@drawable/arrow_right"
                 android:drawablePadding="4dp"
                 android:drawableTint="@color/white"
