@@ -34,8 +34,6 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 // Konstanta untuk kode permintaan (request codes)
 const val ADD_MENU_REQUEST_CODE = 101
@@ -72,7 +70,7 @@ class MainTenantActivity : AppCompatActivity(), MenuTenantAdapter.OnItemActionLi
 
         setupSearchListener()
 
-        val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val tenantId = sharedPref.getInt("tenant_id", -1)
         if (tenantId == -1) {
             Toast.makeText(this, "Tenant ID tidak ditemukan", Toast.LENGTH_SHORT).show()
@@ -87,26 +85,17 @@ class MainTenantActivity : AppCompatActivity(), MenuTenantAdapter.OnItemActionLi
             addMenuLauncher.launch(intent)
         }
 
-        // --- SET UP LONG CLICK LISTENER DARI ADAPTER ---
-        menuAdapter.setOnItemActionListener(this)
-
-        val baseUrl = "http://10.0.2.2/api_menu/" // Ganti dengan Base URL API Anda
-        val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        apiService = retrofit.create(ApiService::class.java)
-
-        // --- Inisialisasi ApiService tunggal yang akan digunakan ---
+        // >>> PERUBAHAN UTAMA: Gunakan instance ApiService dari RetrofitClient <<<
         try {
-            apiService = retrofit.create(ApiService::class.java) // Inisialisasi di sini
-            Log.d("MainTenantActivity", "ApiService initialized successfully.")
+            apiService = RetrofitClient.instance // Dapatkan instance ApiService dari RetrofitClient
+            Log.d("MainTenantActivity", "ApiService initialized from RetrofitClient.")
         } catch (e: Exception) {
             Log.e("MainTenantActivity", "FATAL ERROR during ApiService initialization: ${e.message}", e)
             Toast.makeText(this, "Gagal menginisialisasi layanan API: ${e.message}. Cek log!", Toast.LENGTH_LONG).show()
-            finish() // Tutup activity jika API service gagal
-            return
+            finish() // Tutup activity jika ApiService gagal
+            return // Hentikan eksekusi onCreate
         }
+        // <<< AKHIR PERUBAHAN >>>
 
         // --- Inisialisasi MenuViewModel ---
         try {
@@ -224,7 +213,7 @@ class MainTenantActivity : AppCompatActivity(), MenuTenantAdapter.OnItemActionLi
     }
 
     private fun setupSharedPreferences() {
-        sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     }
 
     private fun checkTenantIdAndLoadData() {

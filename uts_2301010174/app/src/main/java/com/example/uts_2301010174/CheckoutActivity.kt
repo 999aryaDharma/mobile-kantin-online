@@ -226,13 +226,13 @@ class CheckoutActivity : AppCompatActivity() {
         }
 
         // Payment method selection
-        linearLayoutCashPayment.setOnClickListener { selectPaymentMethod("cash") }
-        cardCashPayment.setOnClickListener { selectPaymentMethod("cash") } // Jika card juga bisa diklik
-        radioCash.setOnClickListener { selectPaymentMethod("cash") }
+        linearLayoutCashPayment.setOnClickListener { selectPaymentMethod("CASH") }
+        cardCashPayment.setOnClickListener { selectPaymentMethod("CASH") } // Jika card juga bisa diklik
+        radioCash.setOnClickListener { selectPaymentMethod("CASH") }
 
-        linearLayoutQrisPayment.setOnClickListener { selectPaymentMethod("qris") }
-        cardQrisPayment.setOnClickListener { selectPaymentMethod("qris") } // Jika card juga bisa diklik
-        radioQris.setOnClickListener { selectPaymentMethod("qris") }
+        linearLayoutQrisPayment.setOnClickListener { selectPaymentMethod("QRIS") }
+        cardQrisPayment.setOnClickListener { selectPaymentMethod("QRIS") } // Jika card juga bisa diklik
+        radioQris.setOnClickListener { selectPaymentMethod("QRIS") }
 
         // Confirm payment
         btnConfirmPayment.setOnClickListener {
@@ -244,13 +244,13 @@ class CheckoutActivity : AppCompatActivity() {
         selectedPaymentMethod = method
 
         when (method) {
-            "cash" -> {
+            "CASH" -> {
                 radioCash.isChecked = true
                 radioQris.isChecked = false
                 updateCardBackground(cardCashPayment, true)
                 updateCardBackground(cardQrisPayment, false)
             }
-            "qris" -> {
+            "QRIS" -> {
                 radioCash.isChecked = false
                 radioQris.isChecked = true
                 updateCardBackground(cardCashPayment, false)

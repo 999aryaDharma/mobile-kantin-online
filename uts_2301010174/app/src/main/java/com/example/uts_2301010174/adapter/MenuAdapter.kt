@@ -35,7 +35,7 @@ class MenuAdapter(
             binding.txtPrice.text = formatPriceToRupiah(menu.price)
 
             val cleanedPhoto = menu.photo?.trim()?.replace("\n", "")
-            val imageUrl = "http://10.0.2.2/api_menu/$cleanedPhoto"
+            val imageUrl = "http://192.168.1.46/api_menu/$cleanedPhoto"
             Log.e("MenuAdapter", "Menu photo: $cleanedPhoto")
             Glide.with(binding.root.context)
                 .load(imageUrl)

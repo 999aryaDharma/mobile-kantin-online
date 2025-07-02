@@ -93,7 +93,7 @@ class LoginActivity : AppCompatActivity() {
                             Log.w("LoginActivity", "Tenant ID is NULL or not a valid number (${tenantIdString}) for user ${user.username}. Not saving to SharedPreferences.")
                             editor.remove("tenant_id") // Hapus kunci jika tidak valid
                         }
-                        editor.apply() // <<< PERBAIKAN UTAMA: GANTI apply() menjadi commit() >>>
+                        editor.apply()
                         Log.d("LoginActivity", "SharedPreferences commit() executed.") // Log konfirmasi
 
                         // Arahkan berdasarkan role

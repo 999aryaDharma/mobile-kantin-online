@@ -31,13 +31,12 @@ import com.bumptech.glide.Glide
 import com.example.uts_2301010174.ApiService
 import com.example.uts_2301010174.MenuViewModelFactory
 import com.example.uts_2301010174.R
+import com.example.uts_2301010174.RetrofitClient
 import com.example.uts_2301010174.repository.CategoryRepository
 import com.example.uts_2301010174.repository.MenuRepository
 import com.example.uts_2301010174.viewModel.CategoryViewModel
 import com.example.uts_2301010174.viewModel.CategoryViewModelFactory
 import com.example.uts_2301010174.viewModel.MenuViewModel
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class AddMenuActivity : AppCompatActivity() {
 
@@ -115,33 +114,27 @@ class AddMenuActivity : AppCompatActivity() {
         // BASE URL yang sama untuk semua API
         // PENTING: GANTI DENGAN BASE URL API ANDA YANG VALID!
         // Contoh: "https://your-api-domain.com/" atau "http://10.0.2.2:8080/" (untuk emulator lokal)
-        val base_url = "http://10.0.2.2/api_menu/"
-
-        // Inisialisasi Retrofit sekali
-        val retrofit = Retrofit.Builder()
-            .baseUrl(base_url)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        // --- Inisialisasi ApiService tunggal yang akan digunakan oleh kedua ViewModel ---
-        // Ini adalah poin perubahan utama.
-        val combinedApiService: ApiService // Deklarasi satu instance ApiService
+        // >>> PERUBAHAN UTAMA: Gunakan instance ApiService dari RetrofitClient <<<
+        val apiService: ApiService
         try {
-            combinedApiService = retrofit.create(ApiService::class.java)
+            apiService = RetrofitClient.instance // Dapatkan instance ApiService dari RetrofitClient
+            Log.d("AddMenuActivity", "ApiService initialized from RetrofitClient.")
         } catch (e: Exception) {
-            Log.e("AddMenuActivity", "Error creating combined ApiService: ${e.message}", e)
+            Log.e("AddMenuActivity", "Error getting ApiService from RetrofitClient: ${e.message}", e)
             Toast.makeText(this, "Gagal menginisialisasi layanan API: ${e.message}", Toast.LENGTH_LONG).show()
-            // Nonaktifkan semua UI yang bergantung pada API jika layanan gagal diinisialisasi
             spinnerKategori.isEnabled = false
             buttonSimpanMenu.isEnabled = false
-            return // Hentikan eksekusi onCreate jika ApiService gagal
+            setResult(RESULT_CANCELED)
+            finish()
+            return
         }
+        // <<< AKHIR PERUBAHAN >>>
 
 
         // --- Inisialisasi Category ViewModel ---
         try {
             // Gunakan combinedApiService untuk CategoryRepository
-            val categoryRepository = CategoryRepository(combinedApiService)
+            val categoryRepository = CategoryRepository(apiService)
             val categoryFactory = CategoryViewModelFactory(application, categoryRepository)
             categoryViewModel = ViewModelProvider(this, categoryFactory).get(CategoryViewModel::class.java)
 
@@ -159,7 +152,7 @@ class AddMenuActivity : AppCompatActivity() {
         // --- Inisialisasi Menu ViewModel ---
         try {
             // Gunakan combinedApiService untuk MenuRepository
-            val menuRepository = MenuRepository(combinedApiService, applicationContext)
+            val menuRepository = MenuRepository(apiService, applicationContext)
             val menuFactory = MenuViewModelFactory(application, menuRepository)
             menuViewModel = ViewModelProvider(this, menuFactory)[MenuViewModel::class.java]
 

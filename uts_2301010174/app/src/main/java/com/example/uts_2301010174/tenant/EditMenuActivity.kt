@@ -35,14 +35,13 @@ import com.bumptech.glide.Glide
 import com.example.uts_2301010174.ApiService
 import com.example.uts_2301010174.MenuViewModelFactory
 import com.example.uts_2301010174.R
+import com.example.uts_2301010174.RetrofitClient
 import com.example.uts_2301010174.repository.CategoryRepository
 import com.example.uts_2301010174.repository.MenuRepository
 import com.example.uts_2301010174.user.Menu
 import com.example.uts_2301010174.viewModel.CategoryViewModel
 import com.example.uts_2301010174.viewModel.CategoryViewModelFactory
 import com.example.uts_2301010174.viewModel.MenuViewModel
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class EditMenuActivity : AppCompatActivity() {
 
@@ -125,17 +124,13 @@ class EditMenuActivity : AppCompatActivity() {
         loadMenuDataIntoViews() // Memuat data menu ke UI
         setupClickListeners() // Menyiapkan listener
 
-        val baseUrl = "http://10.0.2.2/api_menu/" // Ganti dengan URL valid Anda
-        val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val combinedApiService: ApiService
+        // >>> PERUBAHAN UTAMA: Gunakan instance ApiService dari RetrofitClient <<<
+        val apiService: ApiService
         try {
-            combinedApiService = retrofit.create(ApiService::class.java)
+            apiService = RetrofitClient.instance // Dapatkan instance ApiService dari RetrofitClient
+            Log.d("EditMenuActivity", "ApiService initialized from RetrofitClient.")
         } catch (e: Exception) {
-            Log.e("EditMenuActivity", "Error creating combined ApiService: ${e.message}", e)
+            Log.e("EditMenuActivity", "Error getting ApiService from RetrofitClient: ${e.message}", e)
             Toast.makeText(this, "Gagal menginisialisasi layanan API: ${e.message}", Toast.LENGTH_LONG).show()
             spinnerKategori.isEnabled = false
             buttonSimpanPerubahan.isEnabled = false
@@ -143,10 +138,11 @@ class EditMenuActivity : AppCompatActivity() {
             finish()
             return
         }
+        // <<< AKHIR PERUBAHAN >>>
 
         // Inisialisasi Category ViewModel
         try {
-            val categoryRepository = CategoryRepository(combinedApiService)
+            val categoryRepository = CategoryRepository(apiService)
             val categoryFactory = CategoryViewModelFactory(application, categoryRepository)
             categoryViewModel = ViewModelProvider(this, categoryFactory).get(CategoryViewModel::class.java)
             observeCategoryViewModel() // Mengamati kategori
@@ -165,7 +161,7 @@ class EditMenuActivity : AppCompatActivity() {
 
         // Inisialisasi Menu ViewModel
         try {
-            val menuRepository = MenuRepository(combinedApiService, applicationContext)
+            val menuRepository = MenuRepository(apiService, applicationContext)
             val menuFactory = MenuViewModelFactory(application, menuRepository)
             menuViewModel = ViewModelProvider(this, menuFactory)[MenuViewModel::class.java]
 
